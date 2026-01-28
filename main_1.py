@@ -60,12 +60,14 @@ if __name__ == "__main__":
     earth = Earth("Earth", 0)
     sat1 = Satellite("Sat1", 100)
     sat2 = Satellite("Sat2", 200)
-    p_final = Packet("Hello from Earth!!", sat1, sat2)
-    p_earth_to_sat1 = RelayPacket(p_final, earth, sat1)
-
-    print(f"Starting relay transmission: {p_earth_to_sat1}")
-
+    sat3 = Satellite("Sat3", 300)
+    sat4 = Satellite("Sat4", 400)
+    p_final = Packet("Hello From Earth!", sat3, sat4)
+    p_to_sat3 = RelayPacket(p_final, sat2, sat3)
+    p_to_sat2 = RelayPacket(p_to_sat3, sat1, sat2)
+    p_onion = RelayPacket(p_to_sat2, earth, sat1)
     try:
-        attempt_transmission(p_earth_to_sat1)
+        print(f"Sending onion packet: {p_onion}\n")
+        attempt_transmission(p_onion)
     except BrokenConnectionError:
         print("Transmission failed")
