@@ -71,3 +71,5 @@ if __name__ == "__main__":
         attempt_transmission(p_onion)
     except BrokenConnectionError:
         print("Transmission failed")
+
+print("")
