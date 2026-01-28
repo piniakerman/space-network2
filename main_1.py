@@ -1,5 +1,13 @@
 import time
-from space_network_lib import SpaceNetwork, SpaceEntity, Packet, TemporalInterferenceError, DataCorruptedError
+from space_network_lib import (
+    SpaceNetwork, SpaceEntity, Packet,
+    TemporalInterferenceError, DataCorruptedError,
+    LinkTerminatedError, OutOfRangeError
+)
+
+
+class BrokenConnectionError(Exception):
+    pass
 
 
 class Satellite(SpaceEntity):
@@ -7,29 +15,39 @@ class Satellite(SpaceEntity):
         super().__init__(name, distance_from_earth)
 
     def receive_signal(self, packet: Packet):
-        print(f"[{self.name}] Received: {packet}. [cite: 69]")
+        print(f"[{self.name}] Received: {packet}.")
 
 
 def attempt_transmission(packet):
     while True:
         try:
             network.send(packet)
+            print("Transmission successful!")
             break
 
         except TemporalInterferenceError:
-            print("...Interference, waiting [cite: 15]")
+            print("...Interference, waiting")
             time.sleep(2)
-
         except DataCorruptedError:
-            print("...corrupted, retrying [cite: 20]")
+            print("...corrupted, retrying")
+
+        except LinkTerminatedError:
+            print("Link lost")
+            raise BrokenConnectionError("Permanent link failure")
+        except OutOfRangeError:
+            print("Target out of range")
+            raise BrokenConnectionError("Target unreachable")
 
 
 if __name__ == "__main__":
-    network = SpaceNetwork(level=2)
+    network = SpaceNetwork(level=3)
 
     sat1 = Satellite("Sat1", 100)
-    sat2 = Satellite("Sat2", 200)
+    sat2 = Satellite("Sat2", 300)
 
-    test_packet = Packet("Hello Space!", sat1, sat2)
+    test_packet = Packet("Important Data", sat1, sat2)
 
-    attempt_transmission(test_packet)
+    try:
+        attempt_transmission(test_packet)
+    except BrokenConnectionError:
+        print("Transmission failed")
